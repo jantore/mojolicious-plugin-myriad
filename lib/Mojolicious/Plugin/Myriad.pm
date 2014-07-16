@@ -3,31 +3,54 @@ package Mojolicious::Plugin::Myriad;
 use base 'Mojolicious::Plugin';
 use version; our $VERSION = version->declare("v0.0.1");
 
+use Myriad::Schema;
+
 sub register {
     my ($self, $app) = @_;
     my $controller = __PACKAGE__ . '::Controller';
 
-    my $config = $_[2] || {};
-    $config{'announce'} ||= '/announce';
-    $config{'scrape'}     = 1 if not defined $config{'scrape'};
+    use DDP;
+    my $config = { %{$_[2]} };
 
-    $app->routes->route($config{'announce'})->via('GET')->to(
-        namespace => $controller,
-        action    => 'announce',
-    );
+    $config->{'announce'} ||= '/announce';
+    $config->{'scrape'}     = 1 if not defined $config->{'scrape'};
 
-    return if not $config{'scrape'};
+    if(not $config->{'schema'} and not $config->{'db'}) {
+        die "Myriad: database not set";
+    }
+
+    my $m = $config->{'schema'} || Myriad::Schema->connect(
+        @{ $config->{'db'} }
+    ) or die "Myriad: could not connect to database";
+
+    die "Myriad: tracker not set" if not $config->{'tracker'};
+    my $tracker = $m->resultset('Tracker')->active->find($config->{'tracker'})
+        or die sprintf("Myriad: tracker not found: %s", $config->{'tracker'});
+
+    $app->helper(myriad => sub { return $tracker });
+
+    $app->routes->route($config->{'announce'})->via('GET')->to(
+        'namespace'      => $controller,
+        'action'         => 'track',
+        'myriad.mode'    => 'announce',
+        'myriad.tracker' => $tracker,
+    )->name('myriad-announce');
+
+    # Returns if scraping is not allowed.
+    return if not $config->{'scrape'};
 
     # Generate scrape path according to convention.
-    my $scrape = $config{'announce'};
+    my $scrape = $config->{'announce'};
     return if not $scrape =~ s{/announce(?=[^/]*$)}{/scrape};
 
     $app->routes->route($scrape)->via('GET')->to(
-        namespace => $controller,
-        action    => 'scrape',
-    );
+        'namespace'      => $controller,
+        'action'         => 'track',
+        'myriad.mode'    => 'scrape',
+        'myriad.tracker' => $tracker,
+    )->name('myriad-scrape');
 }
-  
+
 1;
 __END__
 
