@@ -62,7 +62,11 @@ Mojolicious::Plugin::Myriad - Plug Myriad into your Mojolicious application
 
   use Mojolicious::Lite;
 
-  plugin 'Myriad' => { announce => '/announce' };
+  plugin 'Myriad' => {
+      db      => ['dbi:SQLite:dbfile=myriad.sql'],
+      tracker => 'tracker.example.net'
+  };
+
   get '/' => sub {
       # list torrents
   };
