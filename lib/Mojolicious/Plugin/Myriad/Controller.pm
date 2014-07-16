@@ -11,3 +11,5 @@ sub scrape {
     my ($self) = @_;
 
 }
+
+1;
