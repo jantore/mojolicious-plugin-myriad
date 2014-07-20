@@ -9,7 +9,6 @@ sub register {
     my ($self, $app) = @_;
     my $controller = __PACKAGE__ . '::Controller';
 
-    use DDP;
     my $config = { %{$_[2]} };
 
     $config->{'announce'} ||= '/announce';
