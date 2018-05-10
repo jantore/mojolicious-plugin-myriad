@@ -23,16 +23,15 @@ sub register {
     ) or die "Myriad: could not connect to database";
 
     die "Myriad: tracker not set" if not $config->{'tracker'};
-    my $tracker = $m->resultset('Tracker')->active->find($config->{'tracker'})
-        or die sprintf("Myriad: tracker not found: %s", $config->{'tracker'});
 
-    $app->helper(myriad => sub { return $tracker });
+    $app->helper(myriad => sub {
+        state $t = $m->resultset('Tracker')->active->find($config->{'tracker'})
+    });
 
     $app->routes->route($config->{'announce'})->via('GET')->to(
         'namespace'      => $controller,
         'action'         => 'track',
         'myriad.mode'    => 'announce',
-        'myriad.tracker' => $tracker,
     )->name('myriad-announce');
 
     # Returns if scraping is not allowed.
@@ -46,7 +45,6 @@ sub register {
         'namespace'      => $controller,
         'action'         => 'track',
         'myriad.mode'    => 'scrape',
-        'myriad.tracker' => $tracker,
     )->name('myriad-scrape');
 }
 

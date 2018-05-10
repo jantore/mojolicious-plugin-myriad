@@ -8,7 +8,7 @@ sub track {
     my ($self) = @_;
 
     my $mode = $self->stash->{'myriad.mode'};
-    my $tracker = $self->stash->{'myriad.tracker'};
+    my $tracker = $self->myriad;
 
     # Just in case.
     return if not $mode =~ /^(?:announce|scrape)$/;
