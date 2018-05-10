@@ -1,6 +1,6 @@
 package Mojolicious::Plugin::Myriad::Controller;
 
-use base 'Mojolicious::Controller';
+use Mojo::Base 'Mojolicious::Controller';
 
 use Bencode qw{ bencode };
 
