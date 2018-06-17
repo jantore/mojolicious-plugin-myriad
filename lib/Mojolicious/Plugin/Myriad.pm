@@ -1,7 +1,7 @@
 package Mojolicious::Plugin::Myriad;
 
 use Mojo::Base 'Mojolicious::Plugin';
-use version; our $VERSION = version->declare("v0.0.3");
+use version; our $VERSION = version->declare("v0.0.4");
 
 use Myriad::Schema;
 
