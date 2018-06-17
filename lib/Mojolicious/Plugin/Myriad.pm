@@ -25,7 +25,8 @@ sub register {
     die "Myriad: tracker not set" if not $config->{'tracker'};
 
     $app->helper(myriad => sub {
-        state $t = $m->resultset('Tracker')->active->find($config->{'tracker'})
+        state $t;
+        $t ||= $m->resultset('Tracker')->active->find($config->{'tracker'})
     });
 
     $app->routes->route($config->{'announce'})->via('GET')->to(
